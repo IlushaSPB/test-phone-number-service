@@ -1,0 +1,8 @@
+FROM alpine:3.21
+ARG TARGETARCH
+RUN apk add --no-cache ca-certificates curl && \
+    GOOSE_ARCH=$([ "$TARGETARCH" = "amd64" ] && echo "x86_64" || echo "arm64") && \
+    curl -fsSL "https://github.com/pressly/goose/releases/download/v3.23.1/goose_linux_${GOOSE_ARCH}" -o /usr/local/bin/goose && \
+    chmod +x /usr/local/bin/goose
+WORKDIR /migrations
+ENTRYPOINT ["goose"]
