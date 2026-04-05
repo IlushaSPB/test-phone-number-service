@@ -19,15 +19,15 @@ API будет доступен на `http://localhost:8080`
 curl -X POST http://localhost:8080/api/numbers/import \
   -H "Content-Type: application/json" \
   -d '{
-    "numbers": ["+79161234567", "89261234567", "9031234567"],
+    "numbers": ["+79161234567", "89261234567", "9031234567", "+79161234567"],
     "source": "telegram"
   }'
 ```
 
-Ответ:
+Ответ (дубликат +79161234567 пропущен):
 ```json
 {
-  "accepted": 2,
+  "accepted": 3,
   "skipped": 1,
   "errors": 0
 }
