@@ -1,4 +1,4 @@
--- name: InsertPhoneNumber :exec
+-- name: InsertPhoneNumber :execrows
 INSERT INTO phone_numbers (phone_number, source, country, region, provider)
 VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT (phone_number) DO NOTHING;

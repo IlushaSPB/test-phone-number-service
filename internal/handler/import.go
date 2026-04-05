@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/IlushaSPB/test-phone-number-service/internal/db"
+	"github.com/IlushaSPB/test-phone-number-service/internal/service"
 )
 
 type ImportRequest struct {
@@ -11,7 +15,10 @@ type ImportRequest struct {
 }
 
 type ImportResponse struct {
-	Status string `json:"status"`
+	Accepted int      `json:"accepted"`
+	Skipped  int      `json:"skipped"`
+	Errors   int      `json:"errors"`
+	Details  []string `json:"details,omitempty"`
 }
 
 func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +43,44 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := context.Background()
+	resp := ImportResponse{}
+
+	seen := make(map[string]bool)
+
+	for _, raw := range req.Numbers {
+		info, err := service.NormalizeAndEnrich(raw)
+		if err != nil {
+			resp.Errors++
+			resp.Details = append(resp.Details, raw+": "+err.Error())
+			continue
+		}
+
+		if seen[info.E164] {
+			resp.Skipped++
+			continue
+		}
+		seen[info.E164] = true
+
+		rows, err := h.queries.InsertPhoneNumber(ctx, db.InsertPhoneNumberParams{
+			PhoneNumber: info.E164,
+			Source:      req.Source,
+			Country:     info.Country,
+			Region:      info.Region,
+			Provider:    info.Provider,
+		})
+
+		if err != nil {
+			resp.Errors++
+			resp.Details = append(resp.Details, info.E164+": db error")
+		} else if rows == 0 {
+			resp.Skipped++
+		} else {
+			resp.Accepted++
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(ImportResponse{Status: "ok"})
+	_ = json.NewEncoder(w).Encode(resp)
 }
