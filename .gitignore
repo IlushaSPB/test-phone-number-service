@@ -1,2 +1,3 @@
 .env
 internal/db/
+coverage.out

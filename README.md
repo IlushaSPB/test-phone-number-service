@@ -2,39 +2,61 @@
 
 REST API для управления номерами телефонов с поддержкой импорта, нормализации в E.164 и поиска.
 
-## Быстрый старт
+## Запуск
 
 ```bash
-# Скопировать .env.example → .env (при необходимости изменить порты/пароли)
+# Скопировать конфигурацию (при необходимости изменить порты/пароли)
 cp .env.example .env
 
-# Поднять Postgres, прогнать миграции и запустить API
-docker compose up -d --build
+# Вариант 1: через Makefile
+make run
 
-# Проверить health-check
-curl http://localhost:8080/health
+# Вариант 2: через docker-compose
+docker compose up -d --build
 ```
 
-## Структура
+API будет доступен на `http://localhost:8080`
 
-- `cmd/api` — HTTP-сервер
-- `db/migrations` — миграции goose
-- `sql/queries` — SQL-запросы для sqlc
-- `internal/db` — сгенерированный код sqlc (не коммитится)
+## Примеры использования
 
-## Разработка
+### Импорт номеров
 
 ```bash
-# Установить sqlc (если нет)
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-
-# Сгенерировать Go-код из SQL
-sqlc generate
-
-# Запустить локально (Postgres должен быть доступен на порту из .env)
-go run ./cmd/api
+curl -X POST http://localhost:8080/api/numbers/import \
+  -H "Content-Type: application/json" \
+  -d '{
+    "numbers": ["+79161234567", "89261234567", "9031234567"],
+    "source": "telegram"
+  }'
 ```
 
-## Миграции
+Ответ:
+```json
+{
+  "accepted": 2,
+  "skipped": 1,
+  "errors": 0
+}
+```
 
-Миграции накатываются автоматически при `docker compose up` через сервис `migrate`.
+### Поиск номеров
+
+```bash
+# Все номера
+curl "http://localhost:8080/api/numbers/search"
+
+# Фильтр по стране
+curl "http://localhost:8080/api/numbers/search?country=Russia&limit=10"
+
+# Частичное совпадение номера
+curl "http://localhost:8080/api/numbers/search?number=916"
+
+# Комбинация фильтров
+curl "http://localhost:8080/api/numbers/search?region=Москва&provider=МТС"
+```
+
+## Тесты
+
+```bash
+make test
+```
