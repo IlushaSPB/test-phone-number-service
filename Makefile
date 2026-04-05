@@ -15,7 +15,16 @@ test:
 		if command -v sqlc >/dev/null 2>&1; then \
 			sqlc generate; \
 		else \
-			echo "Ошибка: sqlc не установлен. Установите: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest"; \
+			echo ""; \
+			echo "❌ sqlc не найден в PATH"; \
+			echo ""; \
+			echo "Установите sqlc:"; \
+			echo "  go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest"; \
+			echo ""; \
+			echo "Затем добавьте ~/go/bin в PATH (если ещё не добавлено):"; \
+			echo "  echo 'export PATH=\"\$$HOME/go/bin:\$$PATH\"' >> ~/.zshrc"; \
+			echo "  source ~/.zshrc"; \
+			echo ""; \
 			exit 1; \
 		fi \
 	fi
