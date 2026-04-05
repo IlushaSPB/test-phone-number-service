@@ -5,27 +5,11 @@ REST API для управления номерами телефонов с по
 ## Запуск
 
 ```bash
-# Скопировать конфигурацию (при необходимости изменить порты/пароли)
 cp .env.example .env
-
-# Вариант 1: через Makefile
 make run
-
-# Вариант 2: через docker-compose
-docker compose up -d --build
 ```
 
 API будет доступен на `http://localhost:8080`
-
-## Тесты
-
-```bash
-# Установить sqlc (один раз, если ещё не установлен)
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-
-# Запустить тесты (автоматически сгенерирует internal/db/ если нужно)
-make test
-```
 
 ## Примеры использования
 
@@ -68,5 +52,8 @@ curl "http://localhost:8080/api/numbers/search?region=Москва&provider=МТ
 ## Тесты
 
 ```bash
+# Установить sqlc (один раз)
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
 make test
 ```
