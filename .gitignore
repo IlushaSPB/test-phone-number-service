@@ -1,3 +1,4 @@
 .env
 internal/db/
 coverage.out
+.vscode/
