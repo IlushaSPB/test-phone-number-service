@@ -1,4 +1,4 @@
-.PHONY: run stop build test clean migrate sqlc
+.PHONY: run stop build test clean migrate sqlc setup
 
 run:
 	docker compose up -d --build
@@ -10,6 +10,15 @@ build:
 	go build -o bin/api ./cmd/api
 
 test:
+	@if [ ! -d "internal/db" ]; then \
+		echo "Генерация internal/db/ из SQL..."; \
+		if command -v sqlc >/dev/null 2>&1; then \
+			sqlc generate; \
+		else \
+			echo "Ошибка: sqlc не установлен. Установите: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest"; \
+			exit 1; \
+		fi \
+	fi
 	go test -v ./...
 
 test-cover:

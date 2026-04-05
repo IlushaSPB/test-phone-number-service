@@ -17,6 +17,16 @@ docker compose up -d --build
 
 API будет доступен на `http://localhost:8080`
 
+## Тесты
+
+```bash
+# Установить sqlc (один раз, если ещё не установлен)
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+# Запустить тесты (автоматически сгенерирует internal/db/ если нужно)
+make test
+```
+
 ## Примеры использования
 
 ### Импорт номеров
