@@ -4,22 +4,23 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/IlushaSPB/test-phone-number-service/internal/config"
 	"github.com/IlushaSPB/test-phone-number-service/internal/handler"
+	"github.com/IlushaSPB/test-phone-number-service/internal/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
 	ctx := context.Background()
 
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		log.Fatal("DATABASE_URL is not set")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	pool, err := pgxpool.New(ctx, dbURL)
+	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("unable to create connection pool: %v", err)
 	}
@@ -37,14 +38,13 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", h.Health)
 	mux.HandleFunc("/api/numbers/import", h.Import)
+	mux.HandleFunc("/api/numbers/search", h.Search)
 
-	addr := ":8080"
-	if p := os.Getenv("PORT"); p != "" {
-		addr = ":" + p
-	}
+	chain := middleware.Logging(mux)
 
+	addr := ":" + cfg.Port
 	log.Printf("listening on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, chain); err != nil {
 		log.Fatal(err)
 	}
 }
